@@ -2,9 +2,9 @@
   "name": "lovesex-v3",
   "version": "1.0.0",
   "description": "Love & Sex Platform - Node.js Migration",
-  "main": "public/index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node public/index.js",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
