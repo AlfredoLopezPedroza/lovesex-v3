@@ -144,23 +144,12 @@
                 Explora nuestra colección exclusiva de productos premium. Cada artículo ha sido seleccionado cuidadosamente para garantizar calidad y satisfacción.
             </p>
             
-            <!-- Filtros -->
-            <div class="flex gap-4 justify-center mb-8 flex-wrap">
+            <!-- Filtros Dinámicos -->
+            <div class="flex gap-4 justify-center mb-8 flex-wrap" id="filters-container">
                 <button class="px-6 py-2 rounded-full bg-love-500 text-white transition hover:bg-love-700 filter-btn active" data-filter="all">
                     Todos los Productos
                 </button>
-                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="1">
-                    DILDOS
-                </button>
-                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="2">
-                    ANALES
-                </button>
-                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="3">
-                    VIBRADORES
-                </button>
-                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="4">
-                    ESTIMULANTES
-                </button>
+                <!-- Se llenarán dinámicamente desde la API -->
             </div>
             
             <!-- Grid de Productos -->
@@ -281,6 +270,21 @@
                 const data = await response.json();
                 
                 if (data.success) {
+                    // Generar botones de filtro dinámicamente
+                    const filtersHtml = data.data.map(cat => `
+                        <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="${cat.id}">
+                            ${cat.name.toUpperCase()}
+                        </button>
+                    `).join('');
+                    
+                    // Agregar botones de filtro al contenedor
+                    const filtersContainer = document.getElementById('filters-container');
+                    filtersContainer.innerHTML = filtersContainer.innerHTML + filtersHtml;
+                    
+                    // Re-asignar event listeners a nuevos botones
+                    attachFilterListeners();
+                    
+                    // Generar tarjetas de categorías
                     const categoriesHtml = data.data.map(cat => `
                         <div class="bg-white rounded-lg shadow-md p-8 text-center hover:shadow-lg transition cursor-pointer product-card" onclick="filterByCategory(${cat.id})">
                             <div class="text-4xl mb-4">
@@ -315,10 +319,15 @@
                 return;
             }
             
-            const productsHtml = filtered.map(product => `
+            const productsHtml = filtered.map(product => {
+                // Construir ruta dinámica de imagen basada en slug de categoría
+                const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
+                const imagePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}.jpg`;
+                
+                return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300">
                     <div class="relative h-56 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center overflow-hidden">
-                        <img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
+                        <img src="${imagePath}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
                         ${product.is_top_seller ? '<div class="absolute top-4 right-4 bg-love-500 text-white px-3 py-1 rounded-full text-xs font-bold">⭐ TOP</div>' : ''}
                         ${product.price_promo > 0 ? `<div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">-${Math.round((1 - product.price_promo/product.price) * 100)}%</div>` : ''}
                     </div>
@@ -346,7 +355,7 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             
             document.getElementById('products-container').innerHTML = productsHtml;
         }
@@ -410,6 +419,25 @@
                 btn.classList.remove('border-love-500', 'text-love-500');
             });
         });
+        
+        // Función para reasignar listeners a nuevos botones
+        function attachFilterListeners() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const filter = btn.dataset.filter;
+                    currentFilter = filter;
+                    renderProducts(filter);
+                    
+                    document.querySelectorAll('.filter-btn').forEach(b => {
+                        b.classList.remove('bg-love-500', 'text-white');
+                        b.classList.add('border-love-500', 'text-love-500');
+                    });
+                    
+                    btn.classList.add('bg-love-500', 'text-white');
+                    btn.classList.remove('border-love-500', 'text-love-500');
+                });
+            });
+        }
         
         // Scroll suave
         function scrollToSection(id) {
