@@ -1,0 +1,24 @@
+# Love&Sex V3 - GitIgnore
+
+# Dependencies
+node_modules/
+vendor/
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+config/secrets.php
+config.php
+
+# IDEs and OS basura
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs and Temp
+logs/
+*.log
+tmp/
+temp/
