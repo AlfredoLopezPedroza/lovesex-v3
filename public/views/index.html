@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love&Sex V3 - Tienda Online Premium</title>
+    
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        love: {
+                            50: '#fdf2f8',
+                            500: '#ec4899',
+                            700: '#be185d',
+                            900: '#831843'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #ec4899 0%, #be185d 100%);
+        }
+        
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(236, 72, 153, 0.3);
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #ec4899;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- NAVBAR -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 hero-gradient rounded-full flex items-center justify-center">
+                        <i class="fas fa-heart text-white"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-love-500 to-love-700 bg-clip-text text-transparent">
+                        Love&Sex V3
+                    </h1>
+                </div>
+                
+                <div class="hidden md:flex gap-8">
+                    <a href="#productos" class="text-gray-700 hover:text-love-500 transition">Catálogo</a>
+                    <a href="#categorias" class="text-gray-700 hover:text-love-500 transition">Categorías</a>
+                    <a href="#contacto" class="text-gray-700 hover:text-love-500 transition">Contacto</a>
+                </div>
+                
+                <button class="bg-love-500 text-white px-6 py-2 rounded-full hover:bg-love-700 transition">
+                    <i class="fas fa-shopping-cart mr-2"></i>Carrito
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- HERO SECTION -->
+    <section class="hero-gradient text-white py-20 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-5xl md:text-6xl font-bold mb-4">Bienvenido a Love&Sex V3</h2>
+            <p class="text-xl md:text-2xl mb-8 opacity-90">
+                La plataforma más completa y discreta para encontrar lo que buscas
+            </p>
+            <div class="flex gap-4 justify-center flex-wrap">
+                <button class="bg-white text-love-500 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition" onclick="scrollToSection('productos')">
+                    Explorar Catálogo
+                </button>
+                <button class="border-2 border-white text-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-love-500 transition">
+                    <i class="fas fa-info-circle mr-2"></i>Más Información
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- ESTADÍSTICAS -->
+    <section class="bg-white py-12 px-4 shadow-sm">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+            <div>
+                <h3 class="text-4xl font-bold text-love-500" id="stat-products">112</h3>
+                <p class="text-gray-600 mt-2">Productos Premium</p>
+            </div>
+            <div>
+                <h3 class="text-4xl font-bold text-love-500" id="stat-categories">4</h3>
+                <p class="text-gray-600 mt-2">Categorías</p>
+            </div>
+            <div>
+                <h3 class="text-4xl font-bold text-love-500">100%</h3>
+                <p class="text-gray-600 mt-2">Discreción Garantizada</p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CATEGORÍAS -->
+    <section id="categorias" class="py-16 px-4 bg-gray-100">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12">Nuestras Categorías</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="categories-container">
+                <!-- Se llenarán dinámicamente -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- PRODUCTOS -->
+    <section id="productos" class="py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-4">Catálogo Completo</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
+                Explora nuestra colección exclusiva de productos premium. Cada artículo ha sido seleccionado cuidadosamente para garantizar calidad y satisfacción.
+            </p>
+            
+            <!-- Filtros -->
+            <div class="flex gap-4 justify-center mb-8 flex-wrap">
+                <button class="px-6 py-2 rounded-full bg-love-500 text-white transition hover:bg-love-700 filter-btn active" data-filter="all">
+                    Todos los Productos
+                </button>
+                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="1">
+                    DILDOS
+                </button>
+                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="2">
+                    ANALES
+                </button>
+                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="3">
+                    VIBRADORES
+                </button>
+                <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="4">
+                    ESTIMULANTES
+                </button>
+            </div>
+            
+            <!-- Grid de Productos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="products-container">
+                <div class="loading col-span-full">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- DESTACADOS -->
+    <section class="bg-love-50 py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h2 class="text-4xl font-bold text-center mb-12">Top Ventas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="featured-container">
+                <!-- Se llenarán dinámicamente -->
+            </div>
+        </div>
+    </section>
+    
+    <!-- CONTACTO -->
+    <section id="contacto" class="bg-white py-16 px-4">
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8">¿Preguntas?</h2>
+            <p class="text-gray-600 mb-8">Nuestro equipo está disponible para ayudarte</p>
+            <div class="flex gap-8 justify-center flex-wrap">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-envelope text-love-500 text-2xl"></i>
+                    <span>info@lovesex.com</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-phone text-love-500 text-2xl"></i>
+                    <span>+1 (555) 123-4567</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-clock text-love-500 text-2xl"></i>
+                    <span>24/7 Online</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-white py-12 px-4">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <h3 class="font-bold mb-4 flex items-center gap-2">
+                    <i class="fas fa-heart text-love-500"></i> Love&Sex V3
+                </h3>
+                <p class="text-gray-400 text-sm">Plataforma premium de compra en línea con discreción garantizada.</p>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">Categorías</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-love-500">Dildos</a></li>
+                    <li><a href="#" class="hover:text-love-500">Juguetes Anales</a></li>
+                    <li><a href="#" class="hover:text-love-500">Vibradores</a></li>
+                    <li><a href="#" class="hover:text-love-500">Estimulantes</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">Información</h4>
+                <ul class="space-y-2 text-sm text-gray-400">
+                    <li><a href="#" class="hover:text-love-500">Política de Privacidad</a></li>
+                    <li><a href="#" class="hover:text-love-500">Términos y Condiciones</a></li>
+                    <li><a href="#" class="hover:text-love-500">Envíos</a></li>
+                    <li><a href="#" class="hover:text-love-500">Devoluciones</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-bold mb-4">Síguenos</h4>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-400 hover:text-love-500"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-love-500"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-love-500"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-love-500"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="border-t border-gray-700 pt-8 text-center text-gray-400 text-sm">
+            <p>&copy; 2026 Love&Sex V3. Todos los derechos reservados. | Hecho con <i class="fas fa-heart text-love-500"></i> por IA-CRÓPOLIS</p>
+        </div>
+    </footer>
+    
+    <!-- SCRIPT PARA CONSUMIR API -->
+    <script>
+        const API_BASE = '/api';
+        let allProducts = [];
+        let currentFilter = 'all';
+        
+        // Cargar productos
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_BASE}/products`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    allProducts = data.data;
+                    renderProducts('all');
+                    renderFeaturedProducts();
+                    updateStats();
+                }
+            } catch (error) {
+                console.error('Error cargando productos:', error);
+                document.getElementById('products-container').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-500 text-lg">Error cargando productos. Por favor, intenta de nuevo.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Cargar categorías
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/categories`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const categoriesHtml = data.data.map(cat => `
+                        <div class="bg-white rounded-lg shadow-md p-8 text-center hover:shadow-lg transition cursor-pointer product-card" onclick="filterByCategory(${cat.id})">
+                            <div class="text-4xl mb-4">
+                                <i class="fas fa-gem text-love-500"></i>
+                            </div>
+                            <h3 class="font-bold text-lg mb-2">${cat.name}</h3>
+                            <p class="text-gray-600 text-sm">${cat.description || 'Categoría'}</p>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('categories-container').innerHTML = categoriesHtml;
+                }
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+            }
+        }
+        
+        // Renderizar productos
+        function renderProducts(filter) {
+            let filtered = allProducts;
+            
+            if (filter !== 'all') {
+                filtered = allProducts.filter(p => p.category_id == filter || (p.category && p.category.toLowerCase().includes(filter)));
+            }
+            
+            if (filtered.length === 0) {
+                document.getElementById('products-container').innerHTML = `
+                    <div class="col-span-full text-center py-12">
+                        <p class="text-gray-500 text-lg">No hay productos en esta categoría.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const productsHtml = filtered.map(product => `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300">
+                    <div class="relative h-56 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center overflow-hidden">
+                        <img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
+                        ${product.is_top_seller ? '<div class="absolute top-4 right-4 bg-love-500 text-white px-3 py-1 rounded-full text-xs font-bold">⭐ TOP</div>' : ''}
+                        ${product.price_promo > 0 ? `<div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">-${Math.round((1 - product.price_promo/product.price) * 100)}%</div>` : ''}
+                    </div>
+                    <div class="p-6">
+                        <p class="text-love-500 text-xs font-bold uppercase mb-2">${product.category || 'General'}</p>
+                        <h3 class="font-bold text-lg mb-2 line-clamp-2">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4">SKU: ${product.sku}</p>
+                        
+                        <div class="flex items-end justify-between mb-4">
+                            <div>
+                                ${product.price_promo > 0 ? `
+                                    <p class="text-gray-400 line-through text-sm">$${product.price.toFixed(2)}</p>
+                                    <p class="text-2xl font-bold text-love-500">$${product.price_promo.toFixed(2)}</p>
+                                ` : `
+                                    <p class="text-2xl font-bold text-love-500">$${product.price.toFixed(2)}</p>
+                                `}
+                            </div>
+                            <span class="text-xs font-bold px-3 py-1 rounded-full ${product.stock > 0 ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                                ${product.stock > 0 ? '✓ Stock' : 'Agotado'}
+                            </span>
+                        </div>
+                        
+                        <button class="w-full bg-love-500 text-white py-3 rounded-lg font-bold hover:bg-love-700 transition ${product.stock === 0 ? 'opacity-50 cursor-not-allowed' : ''}">
+                            <i class="fas fa-shopping-cart mr-2"></i>Agregar al Carrito
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('products-container').innerHTML = productsHtml;
+        }
+        
+        // Renderizar productos destacados
+        function renderFeaturedProducts() {
+            const featured = allProducts.filter(p => p.is_top_seller).slice(0, 3);
+            
+            const featuredHtml = featured.map(product => `
+                <div class="bg-white rounded-lg shadow-md overflow-hidden product-card">
+                    <div class="relative h-64 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center">
+                        <img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-lg mb-2">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-4">${product.category || 'General'}</p>
+                        <p class="text-3xl font-bold text-love-500 mb-4">$${product.price.toFixed(2)}</p>
+                        <button class="w-full bg-love-500 text-white py-3 rounded-lg font-bold hover:bg-love-700 transition">
+                            Ver Detalles
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('featured-container').innerHTML = featuredHtml || '<p class="col-span-3 text-center text-gray-500">Cargando destacados...</p>';
+        }
+        
+        // Actualizar estadísticas
+        function updateStats() {
+            const categories = [...new Set(allProducts.map(p => p.category))].length;
+            document.getElementById('stat-products').textContent = allProducts.length;
+            document.getElementById('stat-categories').textContent = categories;
+        }
+        
+        // Filtrar por categoría
+        function filterByCategory(categoryId) {
+            currentFilter = categoryId;
+            renderProducts(categoryId);
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active', 'bg-love-500', 'text-white'));
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.dataset.filter == categoryId) {
+                    btn.classList.add('bg-love-500', 'text-white');
+                }
+            });
+            scrollToSection('productos');
+        }
+        
+        // Event listeners para filtros
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filter = btn.dataset.filter;
+                currentFilter = filter;
+                renderProducts(filter);
+                
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('bg-love-500', 'text-white');
+                    b.classList.add('border-love-500', 'text-love-500');
+                });
+                
+                btn.classList.add('bg-love-500', 'text-white');
+                btn.classList.remove('border-love-500', 'text-love-500');
+            });
+        });
+        
+        // Scroll suave
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        // Cargar datos al iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            loadCategories();
+        });
+    </script>
+</body>
+</html>

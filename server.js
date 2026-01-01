@@ -20,45 +20,25 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// =========== RUTA RAÍZ CON ESTADO DE BD ===========
-app.get('/', async (req, res) => {
-    try {
-        // Verificar conexión a la BD
-        const connection = await pool.getConnection();
-        const [productCount] = await connection.query(
-            'SELECT COUNT(*) as total FROM products WHERE status = "active"'
-        );
-        const [categoryCount] = await connection.query(
-            'SELECT COUNT(*) as total FROM categories WHERE status = "active"'
-        );
-        connection.release();
+// =========== SERVIR PÁGINA PRINCIPAL ===========
+app.get('/views/index.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public/views/index.html'));
+});
 
+// =========== RUTA RAÍZ - REDIRIGE A LA TIENDA ===========
+app.get('/', (req, res) => {
+    // Si es una solicitud de navegador, sirve el HTML
+    if (req.accepts('html')) {
+        res.sendFile(path.join(__dirname, 'public/views/index.html'));
+    } else {
+        // Si es una solicitud de API, devuelve JSON
         res.json({
             status: '✅ Love&Sex v3 - API EN LÍNEA',
             environment: process.env.NODE_ENV || 'production',
-            database: {
-                connected: true,
-                name: process.env.DB_NAME,
-                host: process.env.DB_HOST
-            },
-            inventory: {
-                total_products: productCount[0].total,
-                total_categories: categoryCount[0].total
-            },
-            api_endpoints: {
+            api: {
                 products: '/api/products',
                 categories: '/api/categories',
                 health: '/api/health'
-            },
-            timestamp: new Date().toISOString()
-        });
-    } catch (error) {
-        console.error('❌ Error en ruta raíz:', error);
-        res.status(503).json({
-            status: '❌ Error de conexión',
-            database: {
-                connected: false,
-                error: error.message
             },
             timestamp: new Date().toISOString()
         });
