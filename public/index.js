@@ -45,15 +45,67 @@ app.get('/api/categories', async (req, res) => {
     }
 });
 
-// Obtener todos los productos
+// Obtener todos los productos con categoría
 app.get('/api/products', async (req, res) => {
     try {
         const connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT id, name, price, category_id, image_url, status FROM products WHERE status = "active"');
+        const [rows] = await connection.query(
+            `SELECT p.id, p.sku, p.name, p.price, p.price_promo, p.stock, 
+                    p.image_url, p.is_top_seller, c.name as category 
+             FROM products p 
+             LEFT JOIN categories c ON p.category_id = c.id 
+             WHERE p.status = 'active'
+             ORDER BY p.is_top_seller DESC, p.name ASC`
+        );
         connection.release();
         res.json({ success: true, data: rows });
     } catch (error) {
         console.error('❌ Error al obtener productos:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Obtener productos por categoría
+app.get('/api/products/category/:categoryId', async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query(
+            `SELECT p.id, p.sku, p.name, p.price, p.price_promo, p.stock, 
+                    p.image_url, p.is_top_seller, c.name as category 
+             FROM products p 
+             LEFT JOIN categories c ON p.category_id = c.id 
+             WHERE p.category_id = ? AND p.status = 'active'
+             ORDER BY p.is_top_seller DESC, p.name ASC`,
+            [req.params.categoryId]
+        );
+        connection.release();
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('❌ Error al obtener productos por categoría:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Obtener producto por SKU
+app.get('/api/products/sku/:sku', async (req, res) => {
+    try {
+        const connection = await pool.getConnection();
+        const [rows] = await connection.query(
+            `SELECT p.id, p.sku, p.name, p.slug, p.description, p.price, 
+                    p.price_promo, p.stock, p.image_url, p.is_top_seller, 
+                    c.name as category 
+             FROM products p 
+             LEFT JOIN categories c ON p.category_id = c.id 
+             WHERE p.sku = ? AND p.status = 'active'`,
+            [req.params.sku]
+        );
+        connection.release();
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Producto no encontrado' });
+        }
+        res.json({ success: true, data: rows[0] });
+    } catch (error) {
+        console.error('❌ Error al obtener producto:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
