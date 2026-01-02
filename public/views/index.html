@@ -241,6 +241,46 @@
         let allProducts = [];
         let currentFilter = 'all';
         
+        /**
+         * Construye la ruta de imagen con soporte para múltiples formatos
+         * @param {string} categorySlug - Slug de la categoría
+         * @param {string} sku - SKU del producto en minúsculas
+         * @returns {string} URL de imagen
+         */
+        function buildImagePath(categorySlug, sku) {
+            return `/assets/img/products/${categorySlug}/${sku}`;
+        }
+        
+        /**
+         * Maneja el fallback de formatos de imagen
+         * Intenta: jpg → png → webp → placeholder
+         * @param {HTMLImageElement} img - Elemento img
+         * @param {string} basePath - Ruta sin extensión
+         * @param {string} productName - Nombre del producto para placeholder
+         */
+        function handleImageError(img, basePath, productName) {
+            // Array de formatos a intentar
+            const formats = ['jpg', 'png', 'webp', 'jpeg'];
+            
+            // Obtener el formato actual que falló
+            const currentSrc = img.src;
+            const currentFormat = currentSrc.split('.').pop();
+            const currentIndex = formats.indexOf(currentFormat);
+            
+            // Intentar el siguiente formato
+            const nextIndex = currentIndex + 1;
+            if (nextIndex < formats.length) {
+                const nextFormat = formats[nextIndex];
+                img.src = `${basePath}.${nextFormat}`;
+                // Usar data attribute para rastrear intentos
+                img.setAttribute('data-format-attempt', nextIndex);
+            } else {
+                // Si fallaron todos los formatos, usar placeholder
+                img.src = `https://via.placeholder.com/300x300?text=${encodeURIComponent(productName)}`;
+                img.style.backgroundColor = '#f3f4f6';
+            }
+        }
+        
         // Cargar productos
         async function loadProducts() {
             try {
@@ -322,12 +362,18 @@
             const productsHtml = filtered.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const imagePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}.jpg`;
+                const skuLower = product.sku.toLowerCase();
+                const basePath = buildImagePath(categorySlug, skuLower);
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300">
                     <div class="relative h-56 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center overflow-hidden">
-                        <img src="${imagePath}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
+                        <img 
+                            src="${basePath}.jpg" 
+                            alt="${product.name}" 
+                            class="w-full h-full object-cover"
+                            onerror="handleImageError(this, '${basePath}', '${product.name.replace(/'/g, "\\'")}')"
+                        >
                         ${product.is_top_seller ? '<div class="absolute top-4 right-4 bg-love-500 text-white px-3 py-1 rounded-full text-xs font-bold">⭐ TOP</div>' : ''}
                         ${product.price_promo > 0 ? `<div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">-${Math.round((1 - product.price_promo/product.price) * 100)}%</div>` : ''}
                     </div>
@@ -367,12 +413,18 @@
             const featuredHtml = featured.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría y SKU normalizado
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const imagePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}.jpg`;
+                const skuLower = product.sku.toLowerCase();
+                const basePath = buildImagePath(categorySlug, skuLower);
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card">
                     <div class="relative h-64 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center">
-                        <img src="${imagePath}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
+                        <img 
+                            src="${basePath}.jpg" 
+                            alt="${product.name}" 
+                            class="w-full h-full object-cover"
+                            onerror="handleImageError(this, '${basePath}', '${product.name.replace(/'/g, "\\'")}')"
+                        >
                     </div>
                     <div class="p-6">
                         <h3 class="font-bold text-lg mb-2">${product.name}</h3>
