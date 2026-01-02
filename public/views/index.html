@@ -365,7 +365,7 @@
             const productsHtml = filtered.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const basePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}`;
+                const basePath = `/assets/img/products/${categorySlug}/${product.sku}`;
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300">
@@ -415,7 +415,7 @@
             const featuredHtml = featured.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const basePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}`;
+                const basePath = `/assets/img/products/${categorySlug}/${product.sku}`;
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card">

@@ -15,18 +15,20 @@ const routes = require('./public/routes');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// =========== MIDDLEWARE ===========
+// =========== MIDDLEWARE - ORDEN CRÍTICO ===========
+// 1. Parseo de JSON
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// 2. Archivos estáticos (DEBE estar ANTES de las rutas dinámicas)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// =========== RUTA RAÍZ - ENTREGA LA TIENDA ===========
+// =========== RUTA RAÍZ - ENTREGA TIENDA (SIN ALTERNATIVAS) ===========
 app.get('/', (req, res) => {
-    // Siempre entrega el archivo HTML físico
     res.sendFile(path.join(__dirname, 'public', 'views', 'index.html'));
 });
 
-// =========== USAR RUTAS DE LA API ===========
+// =========== RUTAS DE API ===========
 app.use(routes);
 
 // =========== RUTA DE SALUD ===========
