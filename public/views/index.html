@@ -113,7 +113,7 @@
                 <p class="text-gray-600 mt-2">Productos Premium</p>
             </div>
             <div>
-                <h3 class="text-4xl font-bold text-love-500" id="stat-categories">4</h3>
+                <h3 class="text-4xl font-bold text-love-500" id="stat-categories">9</h3>
                 <p class="text-gray-600 mt-2">Categorías</p>
             </div>
             <div>
@@ -244,35 +244,47 @@
         /**
          * Construye la ruta de imagen con soporte para múltiples formatos
          * @param {string} categorySlug - Slug de la categoría
-         * @param {string} sku - SKU del producto en minúsculas
-         * @returns {string} URL de imagen
+         * @param {string} sku - SKU del producto
+         * @returns {object} Objeto con path base y sku original
          */
         function buildImagePath(categorySlug, sku) {
-            return `/assets/img/products/${categorySlug}/${sku}`;
+            return {
+                basePath: `/assets/img/products/${categorySlug}/${sku.toLowerCase()}`,
+                skuOriginal: sku
+            };
         }
         
         /**
          * Maneja el fallback de formatos de imagen
-         * Intenta: jpg → png → webp → placeholder
+         * Intenta: .webp (MAYÚSCULAS) → .webp (minúsculas) → jpg → png → jpeg → placeholder
          * @param {HTMLImageElement} img - Elemento img
-         * @param {string} basePath - Ruta sin extensión
+         * @param {string} basePath - Ruta sin extensión (en minúsculas)
+         * @param {string} skuOriginal - SKU original en MAYÚSCULAS
          * @param {string} productName - Nombre del producto para placeholder
          */
-        function handleImageError(img, basePath, productName) {
-            // Array de formatos a intentar
-            const formats = ['jpg', 'png', 'webp', 'jpeg'];
+        function handleImageError(img, basePath, skuOriginal, productName) {
+            // Array de formatos a intentar, prioriza .webp
+            const formats = ['webp', 'jpg', 'png', 'jpeg'];
             
             // Obtener el formato actual que falló
             const currentSrc = img.src;
             const currentFormat = currentSrc.split('.').pop();
             const currentIndex = formats.indexOf(currentFormat);
             
+            // Si es el primer intento (.webp minúsculas), intentar con SKU en MAYÚSCULAS
+            if (currentIndex === 0 && currentSrc.includes(basePath)) {
+                // Intentar con SKU en MAYÚSCULAS primero
+                const basePathUppercase = basePath.substring(0, basePath.lastIndexOf('/') + 1) + skuOriginal;
+                img.src = `${basePathUppercase}.webp`;
+                img.setAttribute('data-format-attempt', 'uppercase-webp');
+                return;
+            }
+            
             // Intentar el siguiente formato
             const nextIndex = currentIndex + 1;
             if (nextIndex < formats.length) {
                 const nextFormat = formats[nextIndex];
                 img.src = `${basePath}.${nextFormat}`;
-                // Usar data attribute para rastrear intentos
                 img.setAttribute('data-format-attempt', nextIndex);
             } else {
                 // Si fallaron todos los formatos, usar placeholder
@@ -317,9 +329,14 @@
                         </button>
                     `).join('');
                     
-                    // Agregar botones de filtro al contenedor
+                    // Limpiar y agregar botones de filtro al contenedor
                     const filtersContainer = document.getElementById('filters-container');
-                    filtersContainer.innerHTML = filtersContainer.innerHTML + filtersHtml;
+                    filtersContainer.innerHTML = `
+                        <button class="px-6 py-2 rounded-full bg-love-500 text-white transition hover:bg-love-700 filter-btn active" data-filter="all">
+                            Todos los Productos
+                        </button>
+                        ${filtersHtml}
+                    `;
                     
                     // Re-asignar event listeners a nuevos botones
                     attachFilterListeners();
@@ -335,6 +352,7 @@
                         </div>
                     `).join('');
                     
+                    // Limpiar y renderizar categorías
                     document.getElementById('categories-container').innerHTML = categoriesHtml;
                 }
             } catch (error) {
@@ -362,17 +380,16 @@
             const productsHtml = filtered.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const skuLower = product.sku.toLowerCase();
-                const basePath = buildImagePath(categorySlug, skuLower);
+                const imagePath = buildImagePath(categorySlug, product.sku);
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300">
                     <div class="relative h-56 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center overflow-hidden">
                         <img 
-                            src="${basePath}.jpg" 
+                            src="${imagePath.basePath}.webp" 
                             alt="${product.name}" 
                             class="w-full h-full object-cover"
-                            onerror="handleImageError(this, '${basePath}', '${product.name.replace(/'/g, "\\'")}')"
+                            onerror="handleImageError(this, '${imagePath.basePath}', '${imagePath.skuOriginal}', '${product.name.replace(/'/g, "\\'")}')"
                         >
                         ${product.is_top_seller ? '<div class="absolute top-4 right-4 bg-love-500 text-white px-3 py-1 rounded-full text-xs font-bold">⭐ TOP</div>' : ''}
                         ${product.price_promo > 0 ? `<div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">-${Math.round((1 - product.price_promo/product.price) * 100)}%</div>` : ''}
@@ -411,19 +428,18 @@
             const featured = allProducts.filter(p => p.is_top_seller).slice(0, 3);
             
             const featuredHtml = featured.map(product => {
-                // Construir ruta dinámica de imagen basada en slug de categoría y SKU normalizado
+                // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const skuLower = product.sku.toLowerCase();
-                const basePath = buildImagePath(categorySlug, skuLower);
+                const imagePath = buildImagePath(categorySlug, product.sku);
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card">
                     <div class="relative h-64 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center">
                         <img 
-                            src="${basePath}.jpg" 
+                            src="${imagePath.basePath}.webp" 
                             alt="${product.name}" 
                             class="w-full h-full object-cover"
-                            onerror="handleImageError(this, '${basePath}', '${product.name.replace(/'/g, "\\'")}')"
+                            onerror="handleImageError(this, '${imagePath.basePath}', '${imagePath.skuOriginal}', '${product.name.replace(/'/g, "\\'")}')"
                         >
                     </div>
                     <div class="p-6">
