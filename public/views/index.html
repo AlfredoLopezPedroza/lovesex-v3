@@ -259,10 +259,9 @@
          * Intenta: .webp (MAYÚSCULAS) → .webp (minúsculas) → jpg → png → jpeg → placeholder
          * @param {HTMLImageElement} img - Elemento img
          * @param {string} basePath - Ruta sin extensión (en minúsculas)
-         * @param {string} skuOriginal - SKU original en MAYÚSCULAS
          * @param {string} productName - Nombre del producto para placeholder
          */
-        function handleImageError(img, basePath, skuOriginal, productName) {
+        function handleImageError(img, basePath, productName) {
             // Array de formatos a intentar, prioriza .webp
             const formats = ['webp', 'jpg', 'png', 'jpeg'];
             
@@ -271,20 +270,13 @@
             const currentFormat = currentSrc.split('.').pop();
             const currentIndex = formats.indexOf(currentFormat);
             
-            // Si es el primer intento (.webp minúsculas), intentar con SKU en MAYÚSCULAS
-            if (currentIndex === 0 && currentSrc.includes(basePath)) {
-                // Intentar con SKU en MAYÚSCULAS primero
-                const basePathUppercase = basePath.substring(0, basePath.lastIndexOf('/') + 1) + skuOriginal;
-                img.src = `${basePathUppercase}.webp`;
-                img.setAttribute('data-format-attempt', 'uppercase-webp');
-                return;
-            }
-            
             // Intentar el siguiente formato
             const nextIndex = currentIndex + 1;
             if (nextIndex < formats.length) {
                 const nextFormat = formats[nextIndex];
-                img.src = `${basePath}.${nextFormat}`;
+                // Reemplazar la extensión
+                const newSrc = currentSrc.substring(0, currentSrc.lastIndexOf('.')) + '.' + nextFormat;
+                img.src = newSrc;
                 img.setAttribute('data-format-attempt', nextIndex);
             } else {
                 // Si fallaron todos los formatos, usar placeholder
@@ -380,16 +372,16 @@
             const productsHtml = filtered.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const imagePath = buildImagePath(categorySlug, product.sku);
+                const basePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}`;
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card transition-all duration-300">
                     <div class="relative h-56 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center overflow-hidden">
                         <img 
-                            src="${imagePath.basePath}.webp" 
+                            src="/assets/img/products/${categorySlug}/${product.sku}.webp" 
                             alt="${product.name}" 
                             class="w-full h-full object-cover"
-                            onerror="handleImageError(this, '${imagePath.basePath}', '${imagePath.skuOriginal}', '${product.name.replace(/'/g, "\\'")}')"
+                            onerror="handleImageError(this, '${basePath}', '${product.name.replace(/'/g, "\\'")}')"
                         >
                         ${product.is_top_seller ? '<div class="absolute top-4 right-4 bg-love-500 text-white px-3 py-1 rounded-full text-xs font-bold">⭐ TOP</div>' : ''}
                         ${product.price_promo > 0 ? `<div class="absolute top-4 left-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold">-${Math.round((1 - product.price_promo/product.price) * 100)}%</div>` : ''}
@@ -430,16 +422,16 @@
             const featuredHtml = featured.map(product => {
                 // Construir ruta dinámica de imagen basada en slug de categoría
                 const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
-                const imagePath = buildImagePath(categorySlug, product.sku);
+                const basePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}`;
                 
                 return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card">
                     <div class="relative h-64 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center">
                         <img 
-                            src="${imagePath.basePath}.webp" 
+                            src="/assets/img/products/${categorySlug}/${product.sku}.webp" 
                             alt="${product.name}" 
                             class="w-full h-full object-cover"
-                            onerror="handleImageError(this, '${imagePath.basePath}', '${imagePath.skuOriginal}', '${product.name.replace(/'/g, "\\'")}')"
+                            onerror="handleImageError(this, '${basePath}', '${product.name.replace(/'/g, "\\'")}')"
                         >
                     </div>
                     <div class="p-6">
