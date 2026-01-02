@@ -364,10 +364,15 @@
         function renderFeaturedProducts() {
             const featured = allProducts.filter(p => p.is_top_seller).slice(0, 3);
             
-            const featuredHtml = featured.map(product => `
+            const featuredHtml = featured.map(product => {
+                // Construir ruta dinámica de imagen basada en slug de categoría y SKU normalizado
+                const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
+                const imagePath = `/assets/img/products/${categorySlug}/${product.sku.toLowerCase()}.jpg`;
+                
+                return `
                 <div class="bg-white rounded-lg shadow-md overflow-hidden product-card">
                     <div class="relative h-64 bg-gradient-to-br from-love-100 to-love-50 flex items-center justify-center">
-                        <img src="${product.image_url}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
+                        <img src="${imagePath}" alt="${product.name}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/300x300?text=${encodeURIComponent(product.name)}'">
                     </div>
                     <div class="p-6">
                         <h3 class="font-bold text-lg mb-2">${product.name}</h3>
@@ -378,7 +383,7 @@
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `}).join('');
             
             document.getElementById('featured-container').innerHTML = featuredHtml || '<p class="col-span-3 text-center text-gray-500">Cargando destacados...</p>';
         }
