@@ -247,13 +247,6 @@
          * @param {string} sku - SKU del producto
          * @returns {object} Objeto con path base y sku original
          */
-        function buildImagePath(categorySlug, sku) {
-            return {
-                basePath: `/assets/img/products/${categorySlug}/${sku.toLowerCase()}`,
-                skuOriginal: sku
-            };
-        }
-        
         /**
          * Maneja el fallback de formatos de imagen
          * Intenta: .webp (MAYÚSCULAS) → .webp (minúsculas) → jpg → png → jpeg → placeholder

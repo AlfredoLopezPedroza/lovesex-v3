@@ -20,29 +20,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// =========== SERVIR PÁGINA PRINCIPAL ===========
-app.get('/views/index.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public/views/index.html'));
-});
-
-// =========== RUTA RAÍZ - REDIRIGE A LA TIENDA ===========
+// =========== RUTA RAÍZ - ENTREGA LA TIENDA ===========
 app.get('/', (req, res) => {
-    // Si es una solicitud de navegador, sirve el HTML
-    if (req.accepts('html')) {
-        res.sendFile(path.join(__dirname, 'public/views/index.html'));
-    } else {
-        // Si es una solicitud de API, devuelve JSON
-        res.json({
-            status: '✅ Love&Sex v3 - API EN LÍNEA',
-            environment: process.env.NODE_ENV || 'production',
-            api: {
-                products: '/api/products',
-                categories: '/api/categories',
-                health: '/api/health'
-            },
-            timestamp: new Date().toISOString()
-        });
-    }
+    // Siempre entrega el archivo HTML físico
+    res.sendFile(path.join(__dirname, 'public', 'views', 'index.html'));
 });
 
 // =========== USAR RUTAS DE LA API ===========
