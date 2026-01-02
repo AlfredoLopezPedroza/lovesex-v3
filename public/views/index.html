@@ -281,20 +281,31 @@
         // Cargar productos
         async function loadProducts() {
             try {
+                console.log('🔄 Cargando productos desde:', `${API_BASE}/products`);
                 const response = await fetch(`${API_BASE}/products`);
-                const data = await response.json();
                 
-                if (data.success) {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Productos cargados:', data);
+                
+                if (data.success && data.data && data.data.length > 0) {
                     allProducts = data.data;
+                    console.log(`📦 ${allProducts.length} productos listos para renderizar`);
                     renderProducts('all');
                     renderFeaturedProducts();
                     updateStats();
+                } else {
+                    throw new Error(data.error || 'No hay productos disponibles');
                 }
             } catch (error) {
-                console.error('Error cargando productos:', error);
+                console.error('❌ Error cargando productos:', error);
                 document.getElementById('products-container').innerHTML = `
                     <div class="col-span-full text-center py-12">
-                        <p class="text-gray-500 text-lg">Error cargando productos. Por favor, intenta de nuevo.</p>
+                        <p class="text-gray-500 text-lg">⚠️ Error cargando productos: ${error.message}</p>
+                        <p class="text-gray-400 text-sm mt-2">Verifica la conexión a la BD y los logs del servidor</p>
                     </div>
                 `;
             }
@@ -303,10 +314,17 @@
         // Cargar categorías
         async function loadCategories() {
             try {
+                console.log('🔄 Cargando categorías desde:', `${API_BASE}/categories`);
                 const response = await fetch(`${API_BASE}/categories`);
-                const data = await response.json();
                 
-                if (data.success) {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ Categorías cargadas:', data);
+                
+                if (data.success && data.data) {
                     // Generar botones de filtro dinámicamente
                     const filtersHtml = data.data.map(cat => `
                         <button class="px-6 py-2 rounded-full border-2 border-love-500 text-love-500 transition hover:bg-love-500 hover:text-white filter-btn" data-filter="${cat.id}">
