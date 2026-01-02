@@ -1,31 +1,37 @@
+/**
+ * =========================================================
+ * LOVE&SEX V3 - SERVIDOR PRINCIPAL (PUBLIC ENTRY POINT)
+ * Punto de entrada para la aplicación Node.js en Hostinger
+ * =========================================================
+ */
+
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const pool = require('../core/db');
+const User = require('../models/User');
+const Category = require('../models/Category');
+const Product = require('../models/Product');
+const Media = require('../models/Media');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuración de archivos estáticos (Imágenes, CSS, JS front-end)
-app.use(express.static(path.join(__dirname)));
-
-// Middleware para procesar JSON y datos de formularios
+// =========== MIDDLEWARE ===========
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Ruta base
-app.get('/', (req, res) => {
-    res.send('🏛️ Love&Sex v3: Servidor Node.js Activo y Conectado');
-});
+// Configuración de archivos estáticos
+// Sirve archivos desde la raíz de 'public'
+app.use(express.static(__dirname));
 
-// =========== RUTAS DE LECTURA DE DATOS ===========
+// =========== RUTAS API ===========
 
 // Obtener todos los usuarios
 app.get('/api/users', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT id, username, email, full_name, role, status, created_at FROM users');
-        connection.release();
-        res.json({ success: true, data: rows });
+        const users = await User.findAll();
+        res.json({ success: true, data: users });
     } catch (error) {
         console.error('❌ Error al obtener usuarios:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -35,10 +41,8 @@ app.get('/api/users', async (req, res) => {
 // Obtener todas las categorías
 app.get('/api/categories', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT id, name, description, status FROM categories WHERE status = "active"');
-        connection.release();
-        res.json({ success: true, data: rows });
+        const categories = await Category.findAllActive();
+        res.json({ success: true, data: categories });
     } catch (error) {
         console.error('❌ Error al obtener categorías:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -48,17 +52,8 @@ app.get('/api/categories', async (req, res) => {
 // Obtener todos los productos con categoría
 app.get('/api/products', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query(
-            `SELECT p.id, p.sku, p.name, p.price, p.price_promo, p.stock, 
-                    p.image_url, p.is_top_seller, c.name as category 
-             FROM products p 
-             LEFT JOIN categories c ON p.category_id = c.id 
-             WHERE p.status = 'active'
-             ORDER BY p.is_top_seller DESC, p.name ASC`
-        );
-        connection.release();
-        res.json({ success: true, data: rows });
+        const products = await Product.findAll();
+        res.json({ success: true, data: products });
     } catch (error) {
         console.error('❌ Error al obtener productos:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -68,18 +63,8 @@ app.get('/api/products', async (req, res) => {
 // Obtener productos por categoría
 app.get('/api/products/category/:categoryId', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query(
-            `SELECT p.id, p.sku, p.name, p.price, p.price_promo, p.stock, 
-                    p.image_url, p.is_top_seller, c.name as category 
-             FROM products p 
-             LEFT JOIN categories c ON p.category_id = c.id 
-             WHERE p.category_id = ? AND p.status = 'active'
-             ORDER BY p.is_top_seller DESC, p.name ASC`,
-            [req.params.categoryId]
-        );
-        connection.release();
-        res.json({ success: true, data: rows });
+        const products = await Product.findByCategory(req.params.categoryId);
+        res.json({ success: true, data: products });
     } catch (error) {
         console.error('❌ Error al obtener productos por categoría:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -89,21 +74,11 @@ app.get('/api/products/category/:categoryId', async (req, res) => {
 // Obtener producto por SKU
 app.get('/api/products/sku/:sku', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query(
-            `SELECT p.id, p.sku, p.name, p.slug, p.description, p.price, 
-                    p.price_promo, p.stock, p.image_url, p.is_top_seller, 
-                    c.name as category 
-             FROM products p 
-             LEFT JOIN categories c ON p.category_id = c.id 
-             WHERE p.sku = ? AND p.status = 'active'`,
-            [req.params.sku]
-        );
-        connection.release();
-        if (rows.length === 0) {
+        const product = await Product.findBySku(req.params.sku);
+        if (!product) {
             return res.status(404).json({ success: false, error: 'Producto no encontrado' });
         }
-        res.json({ success: true, data: rows[0] });
+        res.json({ success: true, data: product });
     } catch (error) {
         console.error('❌ Error al obtener producto:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -113,10 +88,8 @@ app.get('/api/products/sku/:sku', async (req, res) => {
 // Obtener inventario (media/archivos)
 app.get('/api/media', async (req, res) => {
     try {
-        const connection = await pool.getConnection();
-        const [rows] = await connection.query('SELECT id, filename, file_path, file_type, uploaded_at FROM media');
-        connection.release();
-        res.json({ success: true, data: rows });
+        const media = await Media.findAll();
+        res.json({ success: true, data: media });
     } catch (error) {
         console.error('❌ Error al obtener media:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -135,8 +108,26 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor Node.js escuchando en el puerto ${PORT}`);
-    console.log(`📊 API disponible en http://localhost:${PORT}/api/*`);
-    console.log(`💓 Love&Sex v3 listo para recibir datos`);
+// =========== RUTA BASE ===========
+// Cualquier ruta no capturada por API se maneja aquí (SPA o archivo estático)
+app.get('*', (req, res) => {
+    // Si existe index.html en views, servirlo, sino enviar mensaje
+    const indexPath = path.join(__dirname, 'views', 'index.html');
+    res.sendFile(indexPath, (err) => {
+        if (err) {
+            // Fallback si no hay index.html
+            res.send('🏛️ Love&Sex v3: Servidor Node.js Activo y Conectado (API Ready)');
+        }
+    });
 });
+
+// =========== INICIAR SERVIDOR ===========
+// Solo iniciamos el servidor si este archivo se ejecuta directamente
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Servidor Node.js (Public) escuchando en el puerto ${PORT}`);
+        console.log(`📊 API disponible en http://localhost:${PORT}/api/*`);
+    });
+}
+
+module.exports = app;
