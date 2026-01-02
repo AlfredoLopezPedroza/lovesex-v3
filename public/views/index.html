@@ -381,8 +381,8 @@
             }
             
             const productsHtml = filtered.map(product => {
-                // Construir ruta dinámica de imagen basada en slug de categoría
-                const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
+                // Usar el alias de categoría directamente del API
+                const categorySlug = product.category_slug || product.category.toLowerCase().replace(/\s+/g, '-') || 'productos';
                 const basePath = `/assets/img/products/${categorySlug}/${product.sku}`;
                 
                 return `
@@ -431,8 +431,8 @@
             const featured = allProducts.filter(p => p.is_top_seller).slice(0, 3);
             
             const featuredHtml = featured.map(product => {
-                // Construir ruta dinámica de imagen basada en slug de categoría
-                const categorySlug = product.category ? product.category.toLowerCase().replace(/\s+/g, '-') : 'productos';
+                // Usar el alias de categoría directamente del API
+                const categorySlug = product.category_slug || product.category.toLowerCase().replace(/\s+/g, '-') || 'productos';
                 const basePath = `/assets/img/products/${categorySlug}/${product.sku}`;
                 
                 return `
