@@ -1,0 +1,11 @@
+RewriteEngine On
+RewriteBase /
+
+# Redirigir todo el tráfico a index.js excepto archivos existentes
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.js [QSA,L]
+
+# Configuración adicional para Node.js en Hostinger (si aplica)
+# En algunos entornos compartidos, esto ayuda a manejar headers de autorización
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
