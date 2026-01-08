@@ -1,0 +1,19 @@
+RewriteEngine On
+RewriteBase /
+
+# Redirigir todo el tráfico que no sea archivo o directorio real a index.js
+# En un entorno Node.js alojado en Hostinger (si usan Passenger o similar),
+# a menudo el entry point se configura en el panel, pero este htaccess
+# ayuda si se sirven archivos estáticos via Apache/LiteSpeed antes de llegar a Node.
+# O si se usa para redirección interna.
+
+# Si el archivo o directorio existe, sírvelo directamente
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Si no, redirige a la raíz (donde Node.js debería estar escuchando/manejando)
+# Nota: En despliegues típicos de Node en cPanel/Hostinger, el .htaccess
+# en la raíz de public_html suele ser necesario para activar la app Node.
+# Aquí estamos en 'public/', asumimos que este directorio es el root web o parte de él.
+
+RewriteRule ^(.*)$ index.js [QSA,L]
