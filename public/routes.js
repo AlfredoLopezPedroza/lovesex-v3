@@ -9,6 +9,40 @@ const express = require('express');
 const router = express.Router();
 
 // =========================================================
+// GET /api/users - Obtener todos los usuarios
+// =========================================================
+router.get('/api/users', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.query('SELECT id, username, email, full_name, role, status, created_at FROM users');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('❌ Error al obtener usuarios:', error);
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// =========================================================
+// GET /api/media - Obtener inventario (media/archivos)
+// =========================================================
+router.get('/api/media', async (req, res) => {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.query('SELECT id, filename, file_path, file_type, uploaded_at FROM media');
+        res.json({ success: true, data: rows });
+    } catch (error) {
+        console.error('❌ Error al obtener media:', error);
+        res.status(500).json({ success: false, error: error.message });
+    } finally {
+        if (connection) connection.release();
+    }
+});
+
+// =========================================================
 // GET /api/products - Obtener todos los productos
 // =========================================================
 router.get('/api/products', async (req, res) => {
