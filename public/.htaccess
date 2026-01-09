@@ -1,0 +1,33 @@
+# Node.js on Hostinger
+# This configuration assumes the server is started via Hostinger's Node.js tool.
+# The rewrite rules below are to ensure requests are routed to the Node.js app
+# or strictly limited if using a reverse proxy setup.
+
+# Prevent direct access to .js files (source code protection)
+<FilesMatch "\.js$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Allow access to index.js only internally or if it's the entry point defined by the host
+# (Hostinger Node.js selector usually handles the startup separately)
+
+RewriteEngine On
+
+# Ensure HTTPS
+RewriteCond %{HTTPS} off
+RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=3001]
+
+# If this is a shared hosting environment trying to use .htaccess to route to Node:
+# Typical "Passenger" or "Litespeed" setup usually handles this without manual rewrites
+# to index.js as a script.
+# However, complying with the memory instruction "rewrite all non-static requests to index.js":
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.js [L]
+
+# Note: In a proper Node.js setup on Hostinger, the "Application Startup File"
+# setting in the control panel is what matters most.
+# The rewrite rule above is for environments where the server expects to
+# hand off to the entry script (like CGI/FastCGI/LSAPI).
