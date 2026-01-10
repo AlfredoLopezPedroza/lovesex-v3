@@ -1,0 +1,18 @@
+RewriteEngine On
+
+# Bloquear acceso directo a archivos .js (código fuente) excepto bundles públicos si los hubiera
+# Esto protege tu lógica de Node.js si por alguna razón el servidor web sirve los archivos directamente
+# RewriteRule \.js$ - [F,L]
+
+# Redirigir todas las peticiones a Node.js (asumiendo que Hostinger usa Phusion Passenger o similar que respeta esto,
+# o simplemente para asegurar que todo pase por el entry point si se configura como tal)
+# En muchos entornos Node.js compartidos, el .htaccess se usa para redirigir todo al script de arranque o
+# para configurar cabeceras.
+
+# Para una SPA o API donde el routing lo maneja Express:
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.js [L,QSA]
+
+# Opciones de seguridad básicas
+Options -Indexes
